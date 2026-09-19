@@ -11,21 +11,23 @@ function loadBoyImages() {
   if (boyImagesLoaded) return Promise.resolve();
   const names = ['boy1', 'boy2', 'boy3', 'boy4'];
   return Promise.all(names.map(name => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
         BOY_IMAGES[name] = img;
+        console.log('Loaded sprite:', name, img.naturalWidth + 'x' + img.naturalHeight);
         resolve();
       };
       img.onerror = () => {
-        console.warn('Failed to load', name);
-        resolve(); // continue even if missing
+        console.warn('Failed to load sprite:', name + '.png');
+        resolve();
       };
-      img.src = name + '.png';
+      // Relative path works for both local and GitHub Pages root
+      img.src = './' + name + '.png';
     });
   })).then(() => {
     boyImagesLoaded = true;
-    console.log('Boy sprites loaded:', Object.keys(BOY_IMAGES));
+    console.log('Boy sprites ready:', Object.keys(BOY_IMAGES));
   });
 }
 
@@ -103,8 +105,8 @@ class BoyActor {
     this.targetX = x;
     this.targetY = y;
     this.isMain = isMain;
-    this.width = 96;
-    this.height = 110;
+    this.width = 110;
+    this.height = 130;
     
     // Animation states
     this.pose = 'sitting'; // sitting, standing, running, teasing, celebrating, snacking
@@ -229,13 +231,13 @@ class BoyActor {
     const key = this.getSpriteKey();
     const img = BOY_IMAGES[key];
     if (img && img.complete && img.naturalWidth > 0) {
-      // Draw sprite: centered, scaled to ~110px tall (matches previous height)
-      const targetH = 118;
+      // Draw cute PNG sprite (larger & clearer than old procedural)
+      const targetH = 140;
       const scale = targetH / img.naturalHeight;
       const drawW = img.naturalWidth * scale;
       const drawH = targetH;
-      // Slight vertical offset so feet sit on the shadow
-      ctx.drawImage(img, -drawW / 2, -drawH + 18, drawW, drawH);
+      // Offset so the character sits nicely on the shadow
+      ctx.drawImage(img, -drawW / 2, -drawH + 22, drawW, drawH);
     } else {
       // Fallback to original procedural (should rarely happen)
       this.drawBody(ctx);

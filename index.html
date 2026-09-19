@@ -29,6 +29,7 @@
           <div class="stat-pill" title="主人打工賺到的金幣">🪙 <span id="coinDisplay">120</span></div>
           <div class="stat-pill" title="連續準時打卡天數">🔥 <span id="streakDisplay">3</span></div>
           <div class="stat-pill" id="soundBtn" onclick="toggleAudio()" style="cursor: pointer;" title="音效開關">🔊 開</div>
+          <div class="stat-pill" id="langBtn" onclick="cycleLanguage()" style="cursor: pointer;" title="Language / 語言">粵</div>
         </div>
       </div>
 
@@ -151,6 +152,11 @@
       // 2. 初始化核心共用 Character Engine
       CharacterEngine.init(stage);
 
+      // Sync language button
+      const langLabels = { yue: '粵', zh: '简', en: 'EN' };
+      const langBtn = document.getElementById('langBtn');
+      if (langBtn) langBtn.innerText = langLabels[CharacterEngine.lang] || '粵';
+
       // 3. 註冊 PWA Service Worker
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
@@ -161,6 +167,17 @@
       const enabled = SoundEffects.toggleSound();
       document.getElementById('soundBtn').innerText = enabled ? '🔊 開' : '🔇 關';
       CharacterEngine.showToast(enabled ? '🔊 音效已開啟' : '🔇 音效已靜音');
+    }
+
+    function cycleLanguage() {
+      const order = ['yue', 'zh', 'en'];
+      const labels = { yue: '粵', zh: '简', en: 'EN' };
+      const current = CharacterEngine.lang || 'yue';
+      const next = order[(order.indexOf(current) + 1) % order.length];
+      CharacterEngine.setLang(next);
+      document.getElementById('langBtn').innerText = labels[next];
+      const msg = { yue: '已切換至粵語', zh: '已切换至简体中文', en: 'Switched to English' };
+      CharacterEngine.showToast(msg[next]);
     }
 
     function triggerTapSimulation() {

@@ -22,52 +22,194 @@ const CharacterEngine = {
   timerSeconds: 10,
   timerInterval: null,
 
-  // Text databases
-  dialogues: {
-    idle: [
-      "我等緊你喎……",
-      "你仲未開始做呀？",
-      "再唔做，我就快變化石喇。",
-      "主人，你做完我先有大餐食㗎……🥺",
-      "出面世界點呀？好想快啲聽你講。"
-    ],
-    urging: [
-      "到時間啦！咪扮睇唔到！",
-      "你件事到底做咗未姐？",
-      "唔好再碌電話喇！做嘢呀！",
-      "你再拖我哋今晚一齊餓死喇！😭",
-      "拖延症又發作？快啲郁手！"
-    ],
-    runaway: [
-      "你撳我做咩？件事仲未做喎！",
-      "又想撳走我？做咗未先！",
-      "你追我嘅時間，件事都做完啦！",
-      "走位！捉我唔到呢～",
-      "唔好逃避現實呀！快啲做！"
-    ],
-    clones: [
-      "做啦！",
-      "我都唔想催你！",
-      "Deadline 喺度呀！",
-      "你追我嘅時間件事都做完啦！",
-      "唔好逃避現實！",
-      "我好肚餓呀～～"
-    ],
-    safeExit: "好啦……知你忙，俾你停一陣，我一陣再返嚟捉你！",
-    celebrating: "YES！今次你真係做咗！👏",
-    departure: "好啦～任務完成，我走喇！拜拜～👋"
+  // Language: 'yue' (粵語), 'zh' (簡體), 'en' (English)
+  lang: 'yue',
+
+  // Multi-language text databases
+  i18n: {
+    yue: {
+      idle: [
+        "我等緊你喎……",
+        "你仲未開始做呀？",
+        "再唔做，我就快變化石喇。",
+        "主人，你做完我先有大餐食㗎……🥺",
+        "出面世界點呀？好想快啲聽你講。"
+      ],
+      urging: [
+        "到時間啦！咪扮睇唔到！",
+        "你件事到底做咗未姐？",
+        "唔好再碌電話喇！做嘢呀！",
+        "你再拖我哋今晚一齊餓死喇！😭",
+        "拖延症又發作？快啲郁手！"
+      ],
+      runaway: [
+        "你撳我做咩？件事仲未做喎！",
+        "又想撳走我？做咗未先！",
+        "你追我嘅時間，件事都做完啦！",
+        "走位！捉我唔到呢～",
+        "唔好逃避現實呀！快啲做！"
+      ],
+      clones: ["做啦！", "我都唔想催你！", "Deadline 喺度呀！", "你追我嘅時間件事都做完啦！", "唔好逃避現實！", "我好肚餓呀～～"],
+      safeExit: "好啦……知你忙，俾你停一陣，我一陣再返嚟捉你！",
+      celebrating: "YES！今次你真係做咗！👏",
+      departure: "好啦～任務完成，我走喇！拜拜～👋",
+      waitingStatus: "等你做完嘢先有飯食 🍱",
+      taskPlaceholder: "今晚 8:00 完成工作 / 溫習功課"
+    },
+    zh: {
+      idle: [
+        "我在等你呢……",
+        "你还没开始做吗？",
+        "再不做，我就要变成化石了。",
+        "主人，你做完我才有大餐吃哦……🥺",
+        "外面世界怎么样？好想快点听你讲。"
+      ],
+      urging: [
+        "到时间了！别装没看到！",
+        "你那件事到底做了没？",
+        "别再刷手机了！做事啊！",
+        "你再拖我们今晚一起饿死！😭",
+        "拖延症又犯了？快点动手！"
+      ],
+      runaway: [
+        "你点我干嘛？事还没做完呢！",
+        "又想点走我？做完了没先！",
+        "你追我的时间，事情都做完了！",
+        "走位！抓不到我哦～",
+        "别逃避现实呀！快点做！"
+      ],
+      clones: ["做啦！", "我也不想催你！", "Deadline 在这里！", "你追我的时间事情都做完了！", "别逃避现实！", "我好饿呀～～"],
+      safeExit: "好吧……知道你忙，让你停一下，我等会再回来抓你！",
+      celebrating: "YES！这次你真的做完了！👏",
+      departure: "好啦～任务完成，我走啦！拜拜～👋",
+      waitingStatus: "等你做完才有饭吃 🍱",
+      taskPlaceholder: "今晚 8:00 完成工作 / 复习功课"
+    },
+    en: {
+      idle: [
+        "I'm waiting for you...",
+        "Haven't you started yet?",
+        "If you don't start, I'll turn into a fossil.",
+        "Master, I only get a feast after you finish...🥺",
+        "How's the outside world? I want to hear your stories."
+      ],
+      urging: [
+        "Time's up! Don't pretend you didn't see!",
+        "Have you finished that thing yet?",
+        "Stop scrolling! Do your work!",
+        "Keep delaying and we'll both starve tonight!😭",
+        "Procrastination again? Get moving!"
+      ],
+      runaway: [
+        "Why are you tapping me? Work isn't done!",
+        "Trying to tap me away? Finish first!",
+        "The time you spend chasing me, the work would be done!",
+        "Dodge! You can't catch me~",
+        "Don't escape reality! Do it now!"
+      ],
+      clones: ["Do it!", "I don't want to nag either!", "Deadline is here!", "Chasing me wastes time!", "Face reality!", "I'm so hungry~~"],
+      safeExit: "Alright... I know you're busy. Take a break, I'll come back later!",
+      celebrating: "YES! You really finished it this time!👏",
+      departure: "Alright~ Task done, I'm leaving! Bye~👋",
+      waitingStatus: "Finish your work so I can eat 🍱",
+      taskPlaceholder: "Finish report / study by 8:00 tonight"
+    }
+  },
+
+  getDialogues() {
+    return this.i18n[this.lang] || this.i18n.yue;
+  },
+
+  setLang(lang) {
+    if (this.i18n[lang]) {
+      this.lang = lang;
+      localStorage.setItem('boy_companion_lang', lang);
+      this.applyLanguage();
+    }
+  },
+
+  applyLanguage() {
+    const d = this.getDialogues();
+    // Update status text
+    const statusEl = document.getElementById('careStatusText');
+    if (statusEl) statusEl.innerText = d.waitingStatus;
+    // Update task input placeholder
+    const taskInput = document.getElementById('taskInput');
+    if (taskInput) {
+      taskInput.placeholder = d.taskPlaceholder;
+      if (!taskInput.value || taskInput.dataset.default === '1') {
+        taskInput.value = d.taskPlaceholder;
+        taskInput.dataset.default = '1';
+      }
+    }
+    // Refresh current quote if any
+    if (this.stage && this.stage.mainBoy) {
+      this.stage.mainBoy.setPoseAndMood('sitting', 'waiting', d.idle[0]);
+    }
+    // Update UI labels if elements exist
+    this.updateUILabels();
+  },
+
+  updateUILabels() {
+    const labels = {
+      yue: {
+        tabReminder: '⏰ Overkill 催促提醒',
+        tabDiary: '📖 晚間日記 (Diary 預覽)',
+        btnTimeUp: '⏰ 時間到',
+        btnTap: '👆 試撳(走位)',
+        btnClone: '👥 召喚分身',
+        btnComplete: '🎉 模擬完成',
+        btnOutfit: '👔 換裝',
+        btnDone: '✅ 我做完啦！(打卡離開)',
+        btnSafe: '🙏 放過我 / 聽電話'
+      },
+      zh: {
+        tabReminder: '⏰ Overkill 催促提醒',
+        tabDiary: '📖 晚间日记 (Diary 预览)',
+        btnTimeUp: '⏰ 时间到',
+        btnTap: '👆 试点(走位)',
+        btnClone: '👥 召唤分身',
+        btnComplete: '🎉 模拟完成',
+        btnOutfit: '👔 换装',
+        btnDone: '✅ 我做完了！(打卡离开)',
+        btnSafe: '🙏 放过我 / 接电话'
+      },
+      en: {
+        tabReminder: '⏰ Overkill Reminder',
+        tabDiary: '📖 Night Diary (Preview)',
+        btnTimeUp: '⏰ Time Up',
+        btnTap: '👆 Tap Test',
+        btnClone: '👥 Summon Clones',
+        btnComplete: '🎉 Simulate Done',
+        btnOutfit: '👔 Change Outfit',
+        btnDone: '✅ I Finished! (Check out)',
+        btnSafe: '🙏 Let me go / Answer call'
+      }
+    };
+    const L = labels[this.lang] || labels.yue;
+    const map = [
+      ['tabReminder', L.tabReminder],
+      ['tabDiary', L.tabDiary],
+    ];
+    // Buttons via text content match is harder; we update known IDs / classes later if needed
   },
 
   init(stageInstance) {
     this.stage = stageInstance;
+    // Restore language
+    const savedLang = localStorage.getItem('boy_companion_lang');
+    if (savedLang && this.i18n[savedLang]) this.lang = savedLang;
+
     this.loadCareData();
     this.updateCareUI();
     this.startTimer();
     this.startIdleTalkLoop();
+    this.applyLanguage();
 
     // Set initial boy quote
     if (this.stage.mainBoy) {
-      this.stage.mainBoy.setPoseAndMood('sitting', 'waiting', "我等緊你喎……");
+      const d = this.getDialogues();
+      this.stage.mainBoy.setPoseAndMood('sitting', 'waiting', d.idle[0]);
     }
   },
 
@@ -133,7 +275,7 @@ const CharacterEngine = {
   startIdleTalkLoop() {
     setInterval(() => {
       if (this.state === 'WAITING' && this.stage.mainBoy) {
-        const quotes = this.dialogues.idle;
+        const quotes = this.getDialogues().idle;
         const q = quotes[Math.floor(Math.random() * quotes.length)];
         this.stage.mainBoy.quote = q;
         SoundEffects.playPop();
@@ -152,7 +294,9 @@ const CharacterEngine = {
     document.getElementById('careStatusText').innerText = "🔥 時間到！佢開始急喇！";
 
     if (this.stage.mainBoy) {
-      this.stage.mainBoy.setPoseAndMood('standing', 'urging', "👤 到時間啦！仲唔去做？");
+      const d = this.getDialogues();
+      const q = d.urging[Math.floor(Math.random() * d.urging.length)];
+      this.stage.mainBoy.setPoseAndMood('standing', 'urging', q);
       this.stage.addDustPuff(this.stage.mainBoy.x, this.stage.mainBoy.y + 60);
     }
   },
@@ -184,7 +328,8 @@ const CharacterEngine = {
     // Runaway quote & pose
     this.state = 'RUNAWAY';
     this.updateCareUI();
-    const quote = this.dialogues.runaway[Math.floor(Math.random() * this.dialogues.runaway.length)];
+    const d = this.getDialogues();
+    const quote = d.runaway[Math.floor(Math.random() * d.runaway.length)];
     boy.setPoseAndMood('running', 'teasing', quote);
 
     this.showToast(`💨 小人仔走位！(嘗試點擊了 ${this.tapCount} 次)`);
@@ -211,7 +356,8 @@ const CharacterEngine = {
       
       const cloneBoy = new BoyActor(`clone_${idx}`, rx, ry, false);
       cloneBoy.outfit = this.care.outfit;
-      const quote = this.dialogues.clones[idx % this.dialogues.clones.length];
+      const d = this.getDialogues();
+      const quote = d.clones[idx % d.clones.length];
       cloneBoy.setPoseAndMood('running', 'urging', quote);
       cloneBoy.impulse((Math.random() - 0.5) * 10, -5);
 
@@ -245,15 +391,16 @@ const CharacterEngine = {
     document.getElementById('careStatusText').innerText = "🥰 主人真係做咗！今晚有飯食！";
 
     // All boys jump and celebrate
+    const d = this.getDialogues();
     this.stage.boys.forEach((b, idx) => {
-      b.setPoseAndMood('celebrating', 'happy', idx === 0 ? this.dialogues.celebrating : "好嘢！做咗咪得囉！");
+      b.setPoseAndMood('celebrating', 'happy', idx === 0 ? d.celebrating : (this.lang === 'en' ? "Nice! Done!" : "好嘢！做咗咪得囉！"));
       b.impulse(0, -6);
     });
 
     // 2.0s later: wave goodbye and exit
     setTimeout(() => {
       if (this.stage.mainBoy) {
-        this.stage.mainBoy.quote = this.dialogues.departure;
+        this.stage.mainBoy.quote = d.departure;
       }
       
       // Animate sliding down off-screen
@@ -308,7 +455,7 @@ const CharacterEngine = {
 
     this.showToast("✋ 安全模式：小人仔避讓 5 分鐘");
     if (this.stage.mainBoy) {
-      this.stage.mainBoy.quote = this.dialogues.safeExit;
+      this.stage.mainBoy.quote = this.getDialogues().safeExit;
       setTimeout(() => {
         this.stage.boys = [];
         this.showExitScreen();
