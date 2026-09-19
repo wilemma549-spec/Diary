@@ -1,8 +1,33 @@
 /**
  * CanvasCharacterRenderer & Physics Engine
  * High-performance 60FPS Canvas 2D engine for Little Boy & Cat.
- * Replicates the visual character designs from Boy1-Boy4.
+ * Now uses the cute Boy1-Boy4 PNG sprites provided by user (instead of procedural chibi that looked like a cockroach).
  */
+
+const BOY_IMAGES = {};
+let boyImagesLoaded = false;
+
+function loadBoyImages() {
+  if (boyImagesLoaded) return Promise.resolve();
+  const names = ['boy1', 'boy2', 'boy3', 'boy4'];
+  return Promise.all(names.map(name => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        BOY_IMAGES[name] = img;
+        resolve();
+      };
+      img.onerror = () => {
+        console.warn('Failed to load', name);
+        resolve(); // continue even if missing
+      };
+      img.src = name + '.png';
+    });
+  })).then(() => {
+    boyImagesLoaded = true;
+    console.log('Boy sprites loaded:', Object.keys(BOY_IMAGES));
+  });
+}
 
 class DustParticle {
   constructor(x, y, vx, vy, color = 'rgba(215, 205, 192, 0.75)') {
@@ -167,6 +192,15 @@ class BoyActor {
     }
   }
 
+  getSpriteKey() {
+    // Map mood/pose to the cutest matching Boy PNG
+    if (this.mood === 'happy' || this.pose === 'celebrating' || this.pose === 'snacking') return 'boy2';
+    if (this.mood === 'angry' || this.mood === 'urging') return 'boy3';
+    if (this.mood === 'runaway' || this.pose === 'running' || this.pose === 'teasing') return 'boy4';
+    // Default calm / waiting / sitting
+    return 'boy1';
+  }
+
   draw(ctx, lookAtPoint) {
     ctx.save();
     ctx.translate(this.x, this.y);
@@ -185,21 +219,30 @@ class BoyActor {
     // Shadow
     ctx.fillStyle = 'rgba(215, 195, 178, 0.45)';
     ctx.beginPath();
-    ctx.ellipse(0, this.height - 2, 32, 6, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, this.height - 2, 36, 7, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Body container with breath
     ctx.translate(0, breathY);
 
-    // Render Clothing Body & Limbs
-    this.drawBody(ctx);
-
-    // Render Head, Hair & Face
-    this.drawHead(ctx, lookAtPoint);
-
-    // If main boy in sitting pose, draw fluffy white cat
-    if (this.isMain && this.pose === 'sitting') {
-      this.drawCat(ctx);
+    // Prefer cute PNG sprites if loaded, fallback to old procedural only if missing
+    const key = this.getSpriteKey();
+    const img = BOY_IMAGES[key];
+    if (img && img.complete && img.naturalWidth > 0) {
+      // Draw sprite: centered, scaled to ~110px tall (matches previous height)
+      const targetH = 118;
+      const scale = targetH / img.naturalHeight;
+      const drawW = img.naturalWidth * scale;
+      const drawH = targetH;
+      // Slight vertical offset so feet sit on the shadow
+      ctx.drawImage(img, -drawW / 2, -drawH + 18, drawW, drawH);
+    } else {
+      // Fallback to original procedural (should rarely happen)
+      this.drawBody(ctx);
+      this.drawHead(ctx, lookAtPoint);
+      if (this.isMain && this.pose === 'sitting') {
+        this.drawCat(ctx);
+      }
     }
 
     ctx.restore();

@@ -140,7 +140,10 @@
     const outfits = ['hoodie', 'rainy', 'school'];
     let outfitIdx = 0;
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 0. 預先載入可愛的 Boy1-4 圖片 (取代舊的 procedural 蟑螂風畫風)
+      await loadBoyImages();
+
       // 1. 初始化 Canvas 動畫物理舞台
       stage = new CanvasCharacterStage('characterCanvas');
       stage.start();
