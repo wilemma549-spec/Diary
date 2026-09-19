@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Overkill Reminder - 催死你小人仔</title>
+  <meta name="theme-color" content="#3A302A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg-warm: #F7F3E9;
+      --card-bg: #FFFFFF;
+      --text-dark: #2C221E;
+      --text-muted: #82756E;
+      --accent-orange: #E67E51;
+      --accent-blue: #5C82A6;
+      --accent-green: #529B77;
+      --accent-red: #D94841;
+      --hoodie-color: #F6EFE6;
+      --hair-color: #443022;
+      --skin-color: #FDEDDC;
+      --jean-color: #6C8CA8;
+      --border-warm: #E2D7CB;
+      --shadow-soft: 0 8px 24px rgba(44, 34, 30, 0.08);
+      --shadow-hover: 0 12px 32px rgba(44, 34, 30, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang HK", "Noto Sans HK", "Microsoft JhengHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-warm);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    /* 主手機容器 */
+    .app-viewport {
+      width: 100%;
+      max-width: 440px;
+      min-height: calc(100vh - 24px);
+      background: #FAF7F2;
+      border-radius: 28px;
+      border: 3px solid var(--border-warm);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 頂部打工養仔狀態欄 */
+    .top-status-bar {
+      background: #FFFFFF;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--border-warm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .care-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .care-avatar-mini {
+      width: 42px;
+      height: 42px;
+      background: var(--hoodie-color);
+      border-radius: 50%;
+      border: 2px solid var(--hair-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      overflow: hidden;
+    }
+
+    .care-info h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .care-info p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .stats-pills {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stat-pill {
+      background: #F4EBE1;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-dark);
+    }
+
+    /* 任務與計時卡片 */
+    .task-card {
+      margin: 12px 14px 4px 14px;
+      background: #FFFFFF;
+      border-radius: 18px;
+      padding: 14px;
+      border: 2px solid var(--border-warm);
+      box-shadow: 0 4px 12px rgba(44,34,30,0.04);
+      z-index: 10;
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .task-title-input {
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      outline: none;
+      width: 100%;
+      color: var(--text-dark);
+      background: transparent;
+    }
+
+    .timer-badge {
+      background: #FFF1EB;
+      color: var(--accent-orange);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .timer-urgent {
+      background: #FEE8E7 !important;
+      color: var(--accent-red) !important;
+      animation: pulseAlert 0.8s infinite alternate;
+    }
+
+    @keyframes pulseAlert {
+      from { transform: scale(1); }
+      to { transform: scale(1.06); }
+    }
+
+    /* 快捷控制條 (快速測試手感) */
+    .quick-test-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .quick-btn {
+      flex: 1;
+      min-width: 76px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border-warm);
+      background: #F8F5EE;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-dark);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .quick-btn:active {
+      transform: scale(0.96);
+      background: #E8DEC8;
+    }
+
+    .quick-btn.danger {
+      background: #FDEDEC;
+      color: var(--accent-red);
+      border-color: #F8B4AF;
+    }
+
+    .quick-btn.success {
+      background: #EAF5EF;
+      color: var(--accent-green);
+      border-color: #A3D4B9;
+    }
+
+    /* 核心小人仔活動舞台 */
+    .character-stage {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      min-height: 380px;
+      overflow: hidden;
+      background: radial-gradient(circle at center 75%, #F0E6D8 0%, #FAF7F2 70%);
+    }
+
+    /* 小人仔本體盒子 (支援絕對定位/隨機瞬移) */
+    .boy-character {
+      position: absolute;
+      width: 110px;
+      height: 120px;
+      cursor: pointer;
+      z-index: 20;
+      transition: left 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28), top 0.28s cubic-bezier(0.18, 0.89, 0.32, 1.28), transform 0.2s ease;
+      will-change: left, top, transform;
+      filter: drop-shadow(0 6px 12px rgba(44, 34, 30, 0.15));
+    }
+
+    .boy-character:active {
+      transform: scale(0.92);
+    }
+
+    /* 小人仔對話氣泡 */
+    .boy-bubble {
+      position: absolute;
+      bottom: 124px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FFFFFF;
+      color: var(--text-dark);
+      padding: 8px 12px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 2px solid var(--border-warm);
+      box-shadow: 0 4px 14px rgba(44,34,30,0.12);
+      pointer-events: none;
+      z-index: 30;
+      animation: bubblePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .boy-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 8px 6px 0;
+      border-style: solid;
+      border-color: #FFFFFF transparent;
+      display: block;
+      width: 0;
+    }
+
+    @keyframes bubblePop {
+      0% { opacity: 0; transform: translateX(-50%) scale(0.7) translateY(10px); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+    }
+
+    /* 逃跑煙霧粒子 */
+    .smoke-puff {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(230, 220, 205, 0.7);
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0.3);
+      animation: puffEffect 0.4s ease-out forwards;
+      z-index: 15;
+    }
+
+    @keyframes puffEffect {
+      0% { opacity: 0.8; transform: translate(-50%, -50%) scale(0.5); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+    }
+
+    /* 角色 SVG 內部動畫 */
+    .anim-idle {
+      animation: boyBreathe 3s ease-in-out infinite;
+    }
+
+    .anim-foot-tap {
+      animation: footTap 0.6s ease-in-out infinite;
+    }
+
+    .anim-runaway {
+      animation: boyRunaway 0.3s ease-in-out infinite alternate;
+    }
+
+    .anim-jump-cheer {
+      animation: boyJumpCheer 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate;
+    }
+
+    @keyframes boyBreathe {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    @keyframes footTap {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-5deg) translateY(-2px); }
+    }
+
+    @keyframes boyRunaway {
+      0% { transform: rotate(-8deg) scaleX(1); }
+      100% { transform: rotate(8deg) scaleX(1); }
+    }
+
+    @keyframes boyJumpCheer {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-16px) scale(1.05); }
+    }
+
+    /* 底部核心動作面板 */
+    .bottom-control-panel {
+      background: #FFFFFF;
+      border-top: 2px solid var(--border-warm);
+      padding: 14px 16px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 25;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-complete {
+      flex: 2;
+      background: var(--accent-green);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(82, 155, 119, 0.3);
+      transition: all 0.15s ease;
+    }
+
+    .btn-complete:active {
+      transform: scale(0.97);
+      background: #448363;
+    }
+
+    .btn-safe-exit {
+      flex: 1;
+      background: #F7EFE8;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border-warm);
+      border-radius: 16px;
+      padding: 14px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .btn-safe-exit:active {
+      background: #EAD9CC;
+      color: var(--text-dark);
+    }
+
+    /* 底部測試與 Engine 狀態條 */
+    .engine-status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 0 4px;
+    }
+
+    .badge-engine {
+      background: #EFE6DA;
+      color: var(--text-dark);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    /* 慶祝全螢幕五彩紙屑 */
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+      z-index: 50;
+      animation: confettiFall 1.6s ease-out forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(350px) rotate(720deg); }
+    }
+
+    /* 浮動提示 Toast */
+    .toast-msg {
+      position: absolute;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(44, 34, 30, 0.88);
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      z-index: 40;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport" id="viewport">
+    
+    <!-- 頂部打工養仔狀態 -->
+    <div class="top-status-bar">
+      <div class="care-profile">
+        <div class="care-avatar-mini" id="miniAvatar">
+          👦
+        </div>
+        <div class="care-info">
+          <h2>困在手機的小男孩</h2>
+          <p id="careStatusText">等你做完嘢先有飯食 🍱</p>
+        </div>
+      </div>
+      <div class="stats-pills">
+        <div class="stat-pill" title="主人賺到的金幣">🪙 <span id="coinCount">120</span></div>
+        <div class="stat-pill" title="連續準時完成 Streak">🔥 <span id="streakCount">3</span></div>
+      </div>
+    </div>
+
+    <!-- 任務卡與時間 -->
+    <div class="task-card">
+      <div class="task-header">
+        <input type="text" class="task-title-input" id="taskInput" value="今晚 8:00 完成報告 / 溫書" title="點擊修改任務">
+        <div class="timer-badge" id="timerDisplay">⏰ 00:10</div>
+      </div>
+      
+      <div style="font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+        <span>🎯 目標：等你做完先走！</span>
+        <span id="overkillModeLabel" style="font-weight: 700; color: var(--accent-orange);">Overkill 強力模式</span>
+      </div>
+
+      <!-- 快速手感測試控制器 (開發者 & 體驗即測) -->
+      <div class="quick-test-bar">
+        <button class="quick-btn" onclick="CharacterEngine.triggerTimeUp()">⏰ 模擬時間到</button>
+        <button class="quick-btn danger" onclick="CharacterEngine.tapBoy()">👆 試撳小人仔(逃跑)</button>
+        <button class="quick-btn danger" onclick="CharacterEngine.triggerClone()">👥 召喚分身</button>
+        <button class="quick-btn success" onclick="CharacterEngine.completeTask()">🎉 模擬完成打卡</button>
+      </div>
+    </div>
+
+    <!-- 小人仔核心舞台 -->
+    <div class="character-stage" id="stage">
+      <!-- 小人仔將動態插入在此 -->
+    </div>
+
+    <!-- 浮動 Toast -->
+    <div class="toast-msg" id="toast"></div>
+
+    <!-- 底部控制與打卡離開 -->
+    <div class="bottom-control-panel">
+      <div class="action-row">
+        <button class="btn-complete" onclick="CharacterEngine.completeTask()">
+          <span>✅</span>
+          <span>我做完啦！(打卡離開)</span>
+        </button>
+        <button class="btn-safe-exit" onclick="CharacterEngine.safeExit()">
+          <span>✋ 放過我 / 聽電話</span>
+        </button>
+      </div>
+
+      <div class="engine-status-bar">
+        <span>Engine 狀態：<b id="engineStatusLabel" style="color: var(--text-dark);">WAITING</b></span>
+        <span class="badge-engine">矩陣共享 Engine v1.0</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /**
+     * Web Audio API 合成音效 ($0 成本，免載入外部音頻，零延遲)
+     */
+    const SoundEffects = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      },
+      playPop() {
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      },
+      playWhoosh() {
+        this.init();
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+      },
+      playAlarm() {
+        this.init();
+        if (!this.ctx) return;
+        [0, 0.15, 0.3].forEach((delay, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(idx % 2 === 0 ? 587 : 784, this.ctx.currentTime + delay);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + delay + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + delay);
+          osc.stop(this.ctx.currentTime + delay + 0.12);
+        });
+      },
+      playCheer() {
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.09);
+          gain.gain.setValueAtTime(0.28, this.ctx.currentTime + idx * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + idx * 0.09 + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.09);
+          osc.stop(this.ctx.currentTime + idx * 0.09 + 0.25);
+        });
+      }
+    };
+
+    /**
+     * SVG 小人仔繪製工廠 (完全依據原圖 Boy1-Boy4 的設定)
+     * 特徵：厚鬆蓬亂棕髮 + 靈動呆毛 + 大眼 + 米白連帽衫(Oversized Hoodie) + 牛仔褲 + 白波鞋
+     */
+    const SpriteFactory = {
+      renderBoySvg(mood = 'sitting') {
+        let expressionSvg = '';
+        let poseSvg = '';
+
+        // 依心情渲染表情
+        if (mood === 'sitting' || mood === 'idle') {
+          // 抱膝等待：眼睛微眨、安靜好奇
+          expressionSvg = `
+            <ellipse cx="50" cy="56" rx="4.5" ry="5.5" fill="#3A281E"/>
+            <ellipse cx="70" cy="56" rx="4.5" ry="5.5" fill="#3A281E"/>
+            <circle cx="51.5" cy="54" r="1.6" fill="#FFFFFF"/>
+            <circle cx="71.5" cy="54" r="1.6" fill="#FFFFFF"/>
+            <ellipse cx="44" cy="62" rx="4" ry="2.2" fill="#F8B69A" opacity="0.6"/>
+            <ellipse cx="76" cy="62" rx="4" ry="2.2" fill="#F8B69A" opacity="0.6"/>
+            <path d="M 57 63 Q 60 65 63 63" stroke="#3A281E" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          `;
+          poseSvg = `
+            <!-- 連帽衫身體 -->
+            <path d="M 38 78 C 34 66, 86 66, 82 78 L 84 98 C 84 102, 36 102, 36 98 Z" fill="#F6EFE6" stroke="#3A281E" stroke-width="2.6" stroke-linejoin="round"/>
+            <!-- 牛仔褲 (抱膝坐) -->
+            <path d="M 40 92 Q 60 98 80 92 L 78 104 Q 60 108 42 104 Z" fill="#6C8CA8" stroke="#3A281E" stroke-width="2.2"/>
+            <!-- 抱膝雙手雙臂 -->
+            <path d="M 40 82 Q 60 92 80 82" stroke="#3A281E" stroke-width="4.2" fill="none" stroke-linecap="round"/>
+            <ellipse cx="48" cy="105" rx="7" ry="4" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.8"/>
+            <ellipse cx="72" cy="105" rx="7" ry="4" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.8"/>
+            <!-- 身邊小白貓 -->
+            <ellipse cx="26" cy="98" rx="10" ry="7.5" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.6"/>
+            <polygon points="19,92 22,86 25,92" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.2"/>
+            <polygon points="27,92 30,86 33,92" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.2"/>
+            <circle cx="23" cy="97" r="1" fill="#3A281E"/>
+            <circle cx="29" cy="97" r="1" fill="#3A281E"/>
+          `;
+        } else if (mood === 'urging' || mood === 'angry') {
+          // 催促生氣：皺眉、叉腰跺腳
+          expressionSvg = `
+            <path d="M 45 50 L 54 53" stroke="#3A281E" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M 75 50 L 66 53" stroke="#3A281E" stroke-width="2.2" stroke-linecap="round"/>
+            <ellipse cx="50" cy="56" rx="4" ry="4.5" fill="#3A281E"/>
+            <ellipse cx="70" cy="56" rx="4" ry="4.5" fill="#3A281E"/>
+            <ellipse cx="43" cy="62" rx="4.5" ry="2.5" fill="#E86E58" opacity="0.8"/>
+            <ellipse cx="77" cy="62" rx="4.5" ry="2.5" fill="#E86E58" opacity="0.8"/>
+            <ellipse cx="60" cy="64" rx="3.5" ry="3" fill="#D94841"/>
+          `;
+          poseSvg = `
+            <path d="M 38 76 C 34 64, 86 64, 82 76 L 82 98 C 82 102, 38 102, 38 98 Z" fill="#F6EFE6" stroke="#3A281E" stroke-width="2.6"/>
+            <!-- 叉腰手勢 -->
+            <path d="M 38 78 Q 28 84 36 90" stroke="#3A281E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <path d="M 82 78 Q 92 84 84 90" stroke="#3A281E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <rect x="44" y="96" width="14" height="12" fill="#6C8CA8" stroke="#3A281E" stroke-width="2"/>
+            <rect x="62" y="96" width="14" height="12" fill="#6C8CA8" stroke="#3A281E" stroke-width="2"/>
+            <ellipse cx="51" cy="109" rx="7" ry="4.2" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.8"/>
+            <ellipse cx="69" cy="109" rx="7" ry="4.2" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.8" class="anim-foot-tap"/>
+          `;
+        } else if (mood === 'teasing' || mood === 'runaway') {
+          // 逃跑扮鬼臉：吐舌頭、單眼、準備溜走
+          expressionSvg = `
+            <path d="M 45 56 Q 50 52 55 56" stroke="#3A281E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <ellipse cx="70" cy="55" rx="4.5" ry="5" fill="#3A281E"/>
+            <circle cx="71.5" cy="53" r="1.5" fill="#FFFFFF"/>
+            <!-- 吐舌頭 -->
+            <path d="M 57 64 Q 60 67 63 64" stroke="#3A281E" stroke-width="1.6" fill="none"/>
+            <path d="M 58 64 C 58 70, 62 70, 62 64 Z" fill="#FF7582" stroke="#3A281E" stroke-width="1.2"/>
+            <ellipse cx="44" cy="61" rx="4.5" ry="2.5" fill="#F8B69A" opacity="0.8"/>
+            <ellipse cx="76" cy="61" rx="4.5" ry="2.5" fill="#F8B69A" opacity="0.8"/>
+          `;
+          poseSvg = `
+            <path d="M 40 76 C 35 65, 85 65, 80 76 L 78 96 C 78 100, 40 100, 40 96 Z" fill="#F6EFE6" stroke="#3A281E" stroke-width="2.6"/>
+            <!-- 擺動手臂 (跑步姿勢) -->
+            <path d="M 40 78 Q 28 72 32 64" stroke="#3A281E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <path d="M 80 80 Q 90 88 94 80" stroke="#3A281E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <!-- 跨步腳 -->
+            <path d="M 46 95 L 38 106" stroke="#6C8CA8" stroke-width="7" stroke-linecap="round"/>
+            <path d="M 66 95 L 76 104" stroke="#6C8CA8" stroke-width="7" stroke-linecap="round"/>
+            <ellipse cx="36" cy="107" rx="7" ry="4" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.8"/>
+            <ellipse cx="78" cy="105" rx="7" ry="4" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.8"/>
+          `;
+        } else if (mood === 'celebrating') {
+          // 完成打卡歡呼：雙手高舉、笑瞇眼、跳躍
+          expressionSvg = `
+            <path d="M 44 56 Q 50 51 56 56" stroke="#3A281E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M 64 56 Q 70 51 76 56" stroke="#3A281E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <ellipse cx="43" cy="61" rx="5" ry="2.8" fill="#F8B69A" opacity="0.9"/>
+            <ellipse cx="77" cy="61" rx="5" ry="2.8" fill="#F8B69A" opacity="0.9"/>
+            <!-- 大開口笑 -->
+            <path d="M 54 62 Q 60 72 66 62 Z" fill="#D94841" stroke="#3A281E" stroke-width="1.6"/>
+          `;
+          poseSvg = `
+            <path d="M 38 74 C 34 63, 86 63, 82 74 L 82 95 C 82 99, 38 99, 38 95 Z" fill="#F6EFE6" stroke="#3A281E" stroke-width="2.6"/>
+            <!-- 雙手大字型舉高 -->
+            <path d="M 38 76 Q 22 60 26 48" stroke="#3A281E" stroke-width="3.8" fill="none" stroke-linecap="round"/>
+            <path d="M 82 76 Q 98 60 94 48" stroke="#3A281E" stroke-width="3.8" fill="none" stroke-linecap="round"/>
+            <!-- 跳躍開腿 -->
+            <path d="M 46 94 L 38 106" stroke="#6C8CA8" stroke-width="7" stroke-linecap="round"/>
+            <path d="M 68 94 L 78 106" stroke="#6C8CA8" stroke-width="7" stroke-linecap="round"/>
+            <ellipse cx="36" cy="107" rx="7" ry="4" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.8"/>
+            <ellipse cx="80" cy="107" rx="7" ry="4" fill="#FFFFFF" stroke="#3A281E" stroke-width="1.8"/>
+          `;
+        }
+
+        return `
+          <svg viewBox="0 0 120 120" style="width:100%; height:100%; overflow:visible;">
+            <!-- 地面影子 -->
+            <ellipse cx="60" cy="112" rx="34" ry="6" fill="#E2D4C3" opacity="0.6"/>
+            
+            ${poseSvg}
+
+            <!-- 圓圓大頭 -->
+            <circle cx="60" cy="52" r="28" fill="#FDEDDC" stroke="#3A281E" stroke-width="2.6"/>
+            
+            <!-- 蓬鬆棕色頭髮 (Boy1-Boy4 特色) -->
+            <path d="M 32 50 C 28 26, 92 26, 88 50 C 93 42, 85 24, 60 22 C 38 22, 27 38, 32 50 Z" fill="#443022"/>
+            <path d="M 32 44 Q 45 42 48 50 Q 56 38 65 48 Q 72 38 88 46" fill="#443022"/>
+            
+            <!-- 靈魂呆毛 (Ahoge) -->
+            <path d="M 58 22 Q 62 8 72 13" fill="none" stroke="#443022" stroke-width="3.2" stroke-linecap="round"/>
+            
+            ${expressionSvg}
+          </svg>
+        `;
+      }
+    };
+
+    /**
+     * Character Engine (角色行為與狀態機 - 與未來 Diary App 矩陣共用)
+     */
+    const CharacterEngine = {
+      state: 'WAITING', // WAITING, URGING, RUNAWAY, CLONE, CELEBRATING, EXITED
+      mood: 'sitting',
+      clones: [],
+      tapCount: 0,
+      coins: 120,
+      streak: 3,
+      timerSeconds: 10,
+      timerInterval: null,
+      idleQuotes: [
+        "我等緊你喎……",
+        "你仲未開始做呀？",
+        "再唔做，我就快變化石喇。",
+        "主人，你做完我先有大餐食㗎……🥺",
+        "外面世界點呀？等你搞掂話我知。"
+      ],
+      urgingQuotes: [
+        "到時間啦！咪扮睇唔到！",
+        "你件事到底做咗未姐？",
+        "唔好再碌電話喇！做嘢呀！",
+        "你再拖我哋今晚一齊餓死喇！😭",
+        "拖延症犯咗呀？起身做啦！"
+      ],
+      runawayQuotes: [
+        "你撳我做咩？件事仲未做喎！",
+        "又想撳走我？做咗未先！",
+        "你追我嘅時間，件事都做完啦！",
+        "捉唔到我呢～快啲做嘢啦！",
+        "走位！你一日唔做我一日唔走！"
+      ],
+      cloneQuotes: [
+        "做啦！",
+        "我都唔想催你！",
+        "Deadline 喺度呀！",
+        "你追我嘅時間件事都做完啦！",
+        "唔好逃避現實！",
+        "我好肚餓呀～～"
+      ],
+
+      init() {
+        this.stage = document.getElementById('stage');
+        this.spawnMainBoy();
+        this.startTimer();
+        this.startIdleTalkLoop();
+        this.updateStats();
+      },
+
+      showToast(text) {
+        const toast = document.getElementById('toast');
+        toast.innerText = text;
+        toast.style.opacity = '1';
+        setTimeout(() => { toast.style.opacity = '0'; }, 2200);
+      },
+
+      updateStats() {
+        document.getElementById('coinCount').innerText = this.coins;
+        document.getElementById('streakCount').innerText = this.streak;
+        document.getElementById('engineStatusLabel').innerText = this.state;
+      },
+
+      spawnMainBoy() {
+        this.stage.innerHTML = '';
+        this.clones = [];
+        
+        const boy = document.createElement('div');
+        boy.className = 'boy-character anim-idle';
+        boy.id = 'mainBoy';
+        boy.style.left = 'calc(50% - 55px)';
+        boy.style.top = '170px';
+        boy.innerHTML = `
+          <div class="boy-bubble" id="mainBubble">我等緊你喎……</div>
+          <div class="boy-sprite" id="mainSprite">${SpriteFactory.renderBoySvg('sitting')}</div>
+        `;
+
+        // 綁定點擊與觸控
+        boy.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.handleBoyTap(boy);
+        });
+
+        this.stage.appendChild(boy);
+        this.clones.push(boy);
+      },
+
+      startTimer() {
+        clearInterval(this.timerInterval);
+        this.timerSeconds = 10;
+        this.updateTimerDisplay();
+
+        this.timerInterval = setInterval(() => {
+          if (this.state === 'CELEBRATING' || this.state === 'EXITED') return;
+          if (this.timerSeconds > 0) {
+            this.timerSeconds--;
+            this.updateTimerDisplay();
+          } else if (this.timerSeconds === 0 && this.state === 'WAITING') {
+            this.triggerTimeUp();
+          }
+        }, 1000);
+      },
+
+      updateTimerDisplay() {
+        const timerEl = document.getElementById('timerDisplay');
+        const min = Math.floor(this.timerSeconds / 60);
+        const sec = this.timerSeconds % 60;
+        timerEl.innerText = `⏰ ${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+
+        if (this.timerSeconds <= 3) {
+          timerEl.classList.add('timer-urgent');
+        } else {
+          timerEl.classList.remove('timer-urgent');
+        }
+      },
+
+      startIdleTalkLoop() {
+        setInterval(() => {
+          if (this.state === 'WAITING') {
+            const randomQuote = this.idleQuotes[Math.floor(Math.random() * this.idleQuotes.length)];
+            this.setBubble('mainBubble', randomQuote);
+          }
+        }, 6000);
+      },
+
+      setBubble(bubbleId, text) {
+        const bubble = document.getElementById(bubbleId);
+        if (bubble) {
+          bubble.innerText = text;
+          SoundEffects.playPop();
+          bubble.style.animation = 'none';
+          bubble.offsetHeight; // trigger reflow
+          bubble.style.animation = 'bubblePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }
+      },
+
+      // 時間到，進入催促模式
+      triggerTimeUp() {
+        this.state = 'URGING';
+        this.updateStats();
+        SoundEffects.playAlarm();
+        if (navigator.vibrate) navigator.vibrate([100, 80, 100]);
+
+        this.showToast('⚠️ 時間到！小人仔開始催你做嘢！');
+        document.getElementById('careStatusText').innerText = '🔥 時間到！佢開始嬲喇！';
+        
+        const mainBoy = document.getElementById('mainBoy');
+        if (mainBoy) {
+          document.getElementById('mainSprite').innerHTML = SpriteFactory.renderBoySvg('urging');
+          mainBoy.className = 'boy-character';
+          this.setBubble('mainBubble', '👤 到時間啦！仲唔去做？');
+        }
+      },
+
+      // 核心手感：點擊小人仔觸發逃跑 (Runaway) 或分身 (Clone)
+      handleBoyTap(boyElement) {
+        SoundEffects.playWhoosh();
+        if (navigator.vibrate) navigator.vibrate(60);
+
+        this.tapCount++;
+
+        // 建立瞬移煙霧效果
+        this.createPuff(boyElement.offsetLeft + 55, boyElement.offsetTop + 60);
+
+        // 如果點擊次數達到 3 次以上，觸發 Clone 分身狂暴模式
+        if (this.tapCount >= 3 && this.clones.length < 6) {
+          this.triggerClone();
+          return;
+        }
+
+        // Runaway 逃跑瞬移
+        this.state = 'RUNAWAY';
+        this.updateStats();
+
+        // 隨機移動到新位置 (避免與當前位置過近)
+        const stageW = this.stage.clientWidth - 120;
+        const stageH = this.stage.clientHeight - 130;
+        
+        const newX = Math.max(10, Math.floor(Math.random() * stageW));
+        const newY = Math.max(10, Math.floor(Math.random() * stageH));
+
+        boyElement.style.left = `${newX}px`;
+        boyElement.style.top = `${newY}px`;
+
+        // 切換為逃跑扮鬼臉表情
+        const sprite = boyElement.querySelector('.boy-sprite');
+        if (sprite) sprite.innerHTML = SpriteFactory.renderBoySvg('runaway');
+
+        const bubble = boyElement.querySelector('.boy-bubble');
+        const quote = this.runawayQuotes[Math.floor(Math.random() * this.runawayQuotes.length)];
+        if (bubble) {
+          bubble.innerText = quote;
+          bubble.style.animation = 'none';
+          bubble.offsetHeight;
+          bubble.style.animation = 'bubblePop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        }
+
+        this.showToast(`💨 走位！(點擊了 ${this.tapCount} 次)`);
+      },
+
+      // 觸發分身模式 (Clone Mode: 1 -> 2 -> 4 -> 6)
+      triggerClone() {
+        this.state = 'CLONE';
+        this.updateStats();
+        SoundEffects.playAlarm();
+        if (navigator.vibrate) navigator.vibrate([80, 50, 80, 50, 100]);
+
+        const currentCount = this.clones.length;
+        const targetCount = currentCount === 1 ? 2 : (currentCount === 2 ? 4 : 6);
+        const toAdd = targetCount - currentCount;
+
+        this.showToast(`👥 召喚分身！小人仔增殖至 ${targetCount} 隻！`);
+        document.getElementById('careStatusText').innerText = `😱 ${targetCount} 隻小人仔全方位催促！`;
+
+        const stageW = this.stage.clientWidth - 120;
+        const stageH = this.stage.clientHeight - 130;
+
+        for (let i = 0; i < toAdd; i++) {
+          const cloneBoy = document.createElement('div');
+          cloneBoy.className = 'boy-character anim-runaway';
+          const rx = Math.max(10, Math.floor(Math.random() * stageW));
+          const ry = Math.max(10, Math.floor(Math.random() * stageH));
+          cloneBoy.style.left = `${rx}px`;
+          cloneBoy.style.top = `${ry}px`;
+
+          const quoteIndex = (currentCount + i) % this.cloneQuotes.length;
+          const quote = this.cloneQuotes[quoteIndex];
+
+          cloneBoy.innerHTML = `
+            <div class="boy-bubble" id="cloneBubble_${currentCount + i}">${quote}</div>
+            <div class="boy-sprite">${SpriteFactory.renderBoySvg(Math.random() > 0.5 ? 'urging' : 'runaway')}</div>
+          `;
+
+          cloneBoy.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.handleBoyTap(cloneBoy);
+          });
+
+          this.stage.appendChild(cloneBoy);
+          this.clones.push(cloneBoy);
+          this.createPuff(rx + 55, ry + 60);
+        }
+      },
+
+      // 煙霧粒子動畫
+      createPuff(x, y) {
+        const puff = document.createElement('div');
+        puff.className = 'smoke-puff';
+        puff.style.left = `${x}px`;
+        puff.style.top = `${y}px`;
+        this.stage.appendChild(puff);
+        setTimeout(() => puff.remove(), 400);
+      },
+
+      // 打卡完成離開 (核心爽快反饋：小人仔歡呼、道別、離開消失)
+      completeTask() {
+        if (this.state === 'CELEBRATING' || this.state === 'EXITED') return;
+
+        this.state = 'CELEBRATING';
+        this.updateStats();
+        clearInterval(this.timerInterval);
+        SoundEffects.playCheer();
+        if (navigator.vibrate) navigator.vibrate([150, 100, 200, 100, 300]);
+
+        // 噴灑五彩紙屑 Confetti
+        this.createConfetti();
+
+        this.coins += 50;
+        this.streak += 1;
+        this.updateStats();
+
+        this.showToast('🎉 打卡完成！賺到 50 金幣養仔！');
+        document.getElementById('careStatusText').innerText = '🥰 主人太棒了！今晚有大餐食！';
+
+        // 所有分身一起慶祝
+        this.clones.forEach((boy, idx) => {
+          boy.className = 'boy-character anim-jump-cheer';
+          const sprite = boy.querySelector('.boy-sprite');
+          if (sprite) sprite.innerHTML = SpriteFactory.renderBoySvg('celebrating');
+
+          const bubble = boy.querySelector('.boy-bubble');
+          if (bubble) {
+            bubble.innerText = idx === 0 ? "YES！今次你真係做咗！👏" : "好嘢！做咗咪得囉！";
+          }
+        });
+
+        // 1.8 秒後「好啦，我走喇」揮手離開
+        setTimeout(() => {
+          const mainBubble = document.querySelector('#mainBoy .boy-bubble');
+          if (mainBubble) mainBubble.innerText = "好啦～任務完成，我走喇！拜拜～👋";
+
+          this.clones.forEach(boy => {
+            boy.style.transition = 'all 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+            boy.style.transform = 'translateY(180px) scale(0.6)';
+            boy.style.opacity = '0';
+          });
+
+          setTimeout(() => {
+            this.state = 'EXITED';
+            this.updateStats();
+            this.stage.innerHTML = `
+              <div style="text-align: center; padding-top: 140px; color: var(--text-muted); font-size: 14px;">
+                <div style="font-size: 40px; margin-bottom: 10px;">🌟</div>
+                <b style="color: var(--text-dark); font-size: 16px;">主人順利完成！</b><br>
+                小人仔心滿意足咁去咗食大餐。<br><br>
+                <button class="quick-btn success" style="padding: 8px 18px; font-size: 13px;" onclick="CharacterEngine.resetLoop()">
+                  🔄 再設下一個任務
+                </button>
+              </div>
+            `;
+          }, 850);
+        }, 1800);
+      },
+
+      // 重置任務循環
+      resetLoop() {
+        this.state = 'WAITING';
+        this.tapCount = 0;
+        this.spawnMainBoy();
+        this.startTimer();
+        this.updateStats();
+        document.getElementById('careStatusText').innerText = '等你做完嘢先有飯食 🍱';
+      },
+
+      // 安全退出機制 (「放過我／我要接電話」)
+      safeExit() {
+        SoundEffects.playPop();
+        this.state = 'EXITED';
+        this.updateStats();
+        clearInterval(this.timerInterval);
+
+        this.showToast('✋ 緊急暫停！小人仔先迴避 5 分鐘');
+        
+        const mainBoy = document.getElementById('mainBoy');
+        if (mainBoy) {
+          const bubble = mainBoy.querySelector('.boy-bubble');
+          if (bubble) bubble.innerText = "好啦……知你忙，俾你停一陣，我一陣再返嚟捉你！";
+          setTimeout(() => {
+            mainBoy.style.transition = 'opacity 0.5s ease';
+            mainBoy.style.opacity = '0';
+            setTimeout(() => {
+              this.stage.innerHTML = `
+                <div style="text-align: center; padding-top: 140px; color: var(--text-muted); font-size: 13px;">
+                  <div style="font-size: 36px; margin-bottom: 8px;">⏳</div>
+                  <b>安全模式已啟動</b><br>
+                  小人仔暫時回到了手機背景。<br><br>
+                  <button class="quick-btn" style="padding: 8px 16px;" onclick="CharacterEngine.resetLoop()">
+                    ▶️ 喚醒小人仔 (恢復催促)
+                  </button>
+                </div>
+              `;
+            }, 500);
+          }, 1200);
+        }
+      },
+
+      createConfetti() {
+        const colors = ['#E67E51', '#5C82A6', '#529B77', '#FFD166', '#FF6B6B'];
+        for (let i = 0; i < 40; i++) {
+          const conf = document.createElement('div');
+          conf.className = 'confetti-piece';
+          conf.style.left = `${Math.random() * 100}%`;
+          conf.style.top = `${Math.random() * 50}%`;
+          conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+          conf.style.transform = `rotate(${Math.random() * 360}deg)`;
+          conf.style.animationDelay = `${Math.random() * 0.4}s`;
+          this.stage.appendChild(conf);
+          setTimeout(() => conf.remove(), 2000);
+        }
+      },
+
+      // 供外部快速切換測試
+      tapBoy() {
+        if (this.clones.length > 0) {
+          this.handleBoyTap(this.clones[0]);
+        }
+      }
+    };
+
+    // 頁面載入時初始化
+    
+    // 註冊 PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      CharacterEngine.init();
+    });
+  </script>
+</body>
+</html>
