@@ -285,6 +285,9 @@ const CharacterEngine = {
 
   // 1. 時間到觸發催促
   triggerTimeUp() {
+    if (window.AndroidBridge && window.AndroidBridge.triggerAlarmPattern) {
+        window.AndroidBridge.triggerAlarmPattern();
+    }
     this.state = 'URGING';
     this.updateCareUI();
     SoundEffects.playAlarm();
@@ -308,19 +311,28 @@ const CharacterEngine = {
     this.tapCount++;
     SoundEffects.playWhoosh();
     SoundEffects.playBoing();
-    if (navigator.vibrate) navigator.vibrate(60);
+    if (navigator.vibrate) navigator.vibrate(80);
+    if (window.AndroidBridge && window.AndroidBridge.vibrate) {
+        window.AndroidBridge.vibrate(80);
+    }
 
-    // Calculate impulse away from tap point
-    const dx = boy.x - clickX;
-    const dy = (boy.y + 40) - clickY;
-    const dist = Math.max(1, Math.sqrt(dx * dx + dy * dy));
-    const speed = 12 + Math.random() * 6;
+    // Dynamic Runaway: Dash across the screen to a random opposite position!
+    const boundsWidth = this.stage ? this.stage.width : 360;
+    const boundsHeight = this.stage ? this.stage.height : 400;
+    
+    // Choose a target far from current position
+    const targetX = Math.random() < 0.5 ? (40 + Math.random() * 80) : (boundsWidth - 120 + Math.random() * 80);
+    const targetY = 80 + Math.random() * (boundsHeight - 180);
+    const dashX = (targetX - boy.x) * 0.25;
+    const dashY = (targetY - boy.y) * 0.25;
 
-    boy.impulse((dx / dist) * speed, (dy / dist) * speed - 4);
-    this.stage.addDustPuff(boy.x, boy.y + 60);
+    boy.impulse(dashX, dashY);
+    if (this.stage && this.stage.addDustPuff) {
+      this.stage.addDustPuff(boy.x, boy.y + 50);
+    }
 
     // If tapped 3+ times, trigger clone swarm
-    if (this.tapCount >= 3 && this.stage.boys.length < 6) {
+    if (this.tapCount >= 3 && this.stage && this.stage.boys.length < 6) {
       this.triggerClone();
       return;
     }
@@ -332,10 +344,9 @@ const CharacterEngine = {
     const quote = d.runaway[Math.floor(Math.random() * d.runaway.length)];
     boy.setPoseAndMood('running', 'teasing', quote);
 
-    this.showToast(`💨 小人仔走位！(嘗試點擊了 ${this.tapCount} 次)`);
+    this.showToast();
   },
 
-  // 3. 分身模式 (Clone Mode: 1 -> 2 -> 4 -> 6)
   triggerClone() {
     this.state = 'CLONE';
     this.updateCareUI();
@@ -473,9 +484,13 @@ const CharacterEngine = {
   },
 
   // 8. Diary 模式關鍵字情感反應 (Scheme B 矩陣驗證)
-  analyzeDiaryEntry(text) {
-    if (!text.trim()) {
-      return "空嘅？唔好呃我喎，一件小事都好呀……";
+    analyzeDiaryEntry(text) {
+    if (!text || !text.trim()) {
+      return {
+        reply: "👤「咦？入面空嘅？唔好呃我喎，今日外面就算發生一件好細嘅事我都想聽㗎……」",
+        pose: "sitting",
+        mood: "waiting"
+      };
     }
 
     this.care.diaryCount++;
@@ -484,23 +499,69 @@ const CharacterEngine = {
     this.updateCareUI();
 
     SoundEffects.playCheer();
-    this.stage.addConfettiShower();
-
-    // Keyword parser based on App計劃
-    if (/返工|OT|老闆|放工|開會/i.test(text)) {
-      return "👤「今日返工好似幾辛苦喎……辛苦你喇，返到嚟就好好休息啦。」";
-    } else if (/開心|旅行|拍拖|好食|好玩|正/i.test(text)) {
-      return "👤「聽落好正喎！外面世界真係咁好玩？下次講多啲俾我知！」";
-    } else if (/考試|Deadline|功課|做野|做嘢/i.test(text)) {
-      return "👤「哦……原來係呢樣嘢搞到你咁煩。唔緊要，我陪住你一齊搞掂佢！」";
-    } else if (/失戀|分手|傷心|辛苦|難過|喊/i.test(text)) {
-      return "👤「今日好似唔容易……你願意寫低同我講，已經做得好好喇。」";
-    } else {
-      return "👤「嗯！我聽完喇！今日又有你嘅故事陪伴我，真係好。」";
+    if (this.stage && this.stage.addConfettiShower) {
+      this.stage.addConfettiShower();
     }
+
+    const t = text.toLowerCase();
+
+    // 1. 辛苦 / 疲累 / OT / 受氣 / 傷心
+    if (/辛苦|好攰|好累|好烦|好煩|ot|加班|老闆|老細|開會|委屈|唔開心|難過|分手|失戀|哭|喊/i.test(t)) {
+      return {
+        reply: "👤「辛苦晒你呀主人……抱抱！出面世界咁辛苦，今晚返到嚟等我同小白貓陪你靜一靜。快啲沖個熱水涼早啲休息，有我喺手機入面一直撐住你！」",
+        pose: "sitting",
+        mood: "calm" // 溫柔陪伴抱貓
+      };
+    }
+
+    // 2. 開心 / 美食 / 慶祝 / 購物
+    if (/開心|大餐|好食|好味|好正|買咗|購物|放假|旅行|拍拖|慶祝|正呀|正啊|爽/i.test(t)) {
+      return {
+        reply: "👤「哇！真係咁正？！聽你講到我都流晒口水！主人努力賺到錢去食好嘢玩好嘢，我都戥你超級開心！下次講多啲細節俾我知呀～嘻嘻！」",
+        pose: "celebrating",
+        mood: "happy" // 興奮慶祝
+      };
+    }
+
+    // 3. 讀書 / 溫習 / 目標 / 努力
+    if (/溫書|溫習|考試|功課|做野|做嘢|報告|project|deadline|目標|減肥|運動/i.test(t)) {
+      return {
+        reply: "👤「好有幹勁呀主人！你今日為我哋嘅好生活又跨出咗一大步！我喺手機入面幫你好好記低晒，辛苦晒你，我哋一齊繼續加油！」",
+        pose: "sitting",
+        mood: "happy"
+      };
+    }
+
+    // 4. 思考 / 迷惘 / 煩惱
+    if (/諗緊|諗唔通|唔知點|點算|選擇|抉擇|決定|迷惘/i.test(t)) {
+      return {
+        reply: "👤「嗯……等我幫你一齊諗下！雖然我困喺手機入面，但我會一直做你最忠實嘅聽眾。無論你最後點決定，我都一定全力撐你！」",
+        pose: "sitting",
+        mood: "waiting"
+      };
+    }
+
+    // 5. 深夜 / 睡意 / 晚安
+    if (/瞓覺|訓覺|好眼瞓|好眼困|瞓喇|夜喇|晚安|早點睡|瞓啦/i.test(t)) {
+      return {
+        reply: "👤「夜喇主人～今日辛苦晒你喇，唔好再捱夜碌電話喇。快啲合埋眼瞓啦，我喺度守護你，聽日外面世界再見，晚安～」",
+        pose: "sitting",
+        mood: "calm"
+      };
+    }
+
+    // 6. 普通日常分享
+    return {
+      reply: "👤「多謝你今日返嚟同我講外面世界嘅事！聽完你講，我覺得手機入面都充滿陽光，冇咁寂寞喇！聽日都要繼續同我講故事喎～」",
+      pose: "standing",
+      mood: "happy"
+    };
   },
 
   showToast(msg) {
+    if (window.AndroidBridge && window.AndroidBridge.showToast) {
+        window.AndroidBridge.showToast(msg);
+    }
     const t = document.getElementById('toast');
     if (t) {
       t.innerText = msg;

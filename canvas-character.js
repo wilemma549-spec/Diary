@@ -227,22 +227,23 @@ class BoyActor {
     // Body container with breath
     ctx.translate(0, breathY);
 
-    // Prefer cute PNG sprites if loaded, fallback to old procedural only if missing
+    // Single-pose sprite rendering or High-detail 60FPS Canvas Animation
     const key = this.getSpriteKey();
     const img = BOY_IMAGES[key];
-    if (img && img.complete && img.naturalWidth > 0) {
-      // Draw cute PNG sprite (larger & clearer than old procedural)
-      const targetH = 140;
+    // Only render image if it is an individual cropped boy sprite (not a multi-thumbnail collage sheet)
+    const isSingleSprite = img && img.complete && img.naturalWidth > 0 && !img.isCollage;
+    
+    if (isSingleSprite) {
+      const targetH = 150;
       const scale = targetH / img.naturalHeight;
       const drawW = img.naturalWidth * scale;
       const drawH = targetH;
-      // Offset so the character sits nicely on the shadow
       ctx.drawImage(img, -drawW / 2, -drawH + 22, drawW, drawH);
     } else {
-      // Fallback to original procedural (should rarely happen)
+      // Fluid, animated 60FPS character with physics, blinking eyes, expressive mouth, and companion cat
       this.drawBody(ctx);
       this.drawHead(ctx, lookAtPoint);
-      if (this.isMain && this.pose === 'sitting') {
+      if (this.isMain && (this.pose === 'sitting' || this.mood === 'calm')) {
         this.drawCat(ctx);
       }
     }

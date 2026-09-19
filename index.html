@@ -227,9 +227,9 @@
 
     function submitDiary() {
       const input = document.getElementById('diaryText');
-      const reply = CharacterEngine.analyzeDiaryEntry(input.value);
-      if (stage.mainBoy) {
-        stage.mainBoy.setPoseAndMood('sitting', 'happy', reply);
+      const res = CharacterEngine.analyzeDiaryEntry(input.value);
+      if (stage && stage.mainBoy) {
+        stage.mainBoy.setPoseAndMood(res.pose || 'sitting', res.mood || 'happy', res.reply);
       }
       input.value = '';
     }
