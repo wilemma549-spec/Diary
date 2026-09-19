@@ -7,28 +7,52 @@
 const BOY_IMAGES = {};
 let boyImagesLoaded = false;
 
-function loadBoyImages() {
-  if (boyImagesLoaded) return Promise.resolve();
-  const names = ['boy1', 'boy2', 'boy3', 'boy4'];
-  return Promise.all(names.map(name => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        BOY_IMAGES[name] = img;
-        console.log('Loaded sprite:', name, img.naturalWidth + 'x' + img.naturalHeight);
-        resolve();
-      };
-      img.onerror = () => {
-        console.warn('Failed to load sprite:', name + '.png');
-        resolve();
-      };
-      // Relative path works for both local and GitHub Pages root
-      img.src = './' + name + '.png';
-    });
-  })).then(() => {
-    boyImagesLoaded = true;
-    console.log('Boy sprites ready:', Object.keys(BOY_IMAGES));
+// Comprehensive Full-Body Sprite Registry (Supporting 11+ distinct whole-body poses & expressions)
+const SPRITE_CONFIG = {
+  waiting: ['1789797335034.png', 'boy_waiting.png', 'boy1.png'],     // 全身抱膝坐等 (日常等待主人)
+  wink: ['1789797335010.png', 'boy_wink.png'],                       // 全身眨眼比 V (俏皮鼓勵)
+  cat: ['1789797335607.png', 'boy_cat.png'],                         // 全身抱小白貓 (安慰、心疼、陪伴)
+  snack: ['1789797335057.png', 'boy_snack.png', 'boy3.png'],         // 全身吃零食 (慶祝、美食小獎勵)
+  skateboard: ['1789797335467.png', 'boy_skateboard.png'],           // 全身滑板少年 (目標奮鬥、立志)
+  urging: ['1789797335801.png', 'boy_urging.png'],                   // 全身插腰催促 (到時間、催主人做嘢)
+  runaway: ['1789797335870.png', 'boy_runaway.png', 'boy4.png'],     // 全身奔跑走位 (敏捷逃跑、躲避點擊)
+  celebrate: ['1789797335838.png', 'boy_celebrate.png', 'boy2.png'], // 全身大笑歡呼 (完成任務、慶祝)
+  thinking: ['1789797335105.png', 'boy_thinking.png'],               // 全身托腮思考 (煩惱、迷惘抉擇)
+  sleep: ['1789797335184.png', 'boy_sleep.png'],                     // 全身趴睡安眠 (深夜、晚安)
+  study: ['1789797335732.png', 'boy_study.png']                      // 全身筆記日記 (學習、記錄)
+};
+
+function tryLoadImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      // Filter out overview contact sheets (images wider than 380px that contain multiple small thumbnails)
+      const isOverviewSheet = img.naturalWidth >= 380 && img.naturalHeight >= 360 && (img.src.includes('boy1') || img.src.includes('boy2') || img.src.includes('boy3') || img.src.includes('boy4')) && !img.src.includes('17897');
+      if (isOverviewSheet) {
+        console.warn('Rejected overview sheet:', src);
+        resolve(null);
+      } else {
+        resolve(img);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = './' + src;
   });
+}
+
+async function loadBoyImages() {
+  if (boyImagesLoaded) return;
+  for (const [key, candidates] of Object.entries(SPRITE_CONFIG)) {
+    for (const file of candidates) {
+      const img = await tryLoadImage(file);
+      if (img) {
+        BOY_IMAGES[key] = img;
+        break;
+      }
+    }
+  }
+  boyImagesLoaded = true;
+  console.log('Loaded Full-Body Sprites:', Object.keys(BOY_IMAGES));
 }
 
 class DustParticle {
@@ -194,13 +218,25 @@ class BoyActor {
     }
   }
 
-  getSpriteKey() {
-    // Map mood/pose to the cutest matching Boy PNG
-    if (this.mood === 'happy' || this.pose === 'celebrating' || this.pose === 'snacking') return 'boy2';
-    if (this.mood === 'angry' || this.mood === 'urging') return 'boy3';
-    if (this.mood === 'runaway' || this.pose === 'running' || this.pose === 'teasing') return 'boy4';
-    // Default calm / waiting / sitting
-    return 'boy1';
+    getSpriteKey() {
+    // Rich Full-Body Pose & Emotion Resolver
+    if (this.pose === 'runaway' || this.pose === 'running' || this.mood === 'runaway') return 'runaway';
+    if (this.pose === 'cat' || this.mood === 'comfort' || (this.mood === 'calm' && this.pose === 'sitting')) {
+      if (BOY_IMAGES['cat']) return 'cat';
+    }
+    if (this.pose === 'celebrating' || this.mood === 'happy') {
+      if (BOY_IMAGES['celebrate']) return 'celebrate';
+      if (BOY_IMAGES['wink']) return 'wink';
+    }
+    if (this.pose === 'snack' || this.pose === 'snacking') return 'snack';
+    if (this.pose === 'skateboard' || this.pose === 'active') return 'skateboard';
+    if (this.pose === 'thinking' || this.mood === 'thinking') return 'thinking';
+    if (this.pose === 'sleep' || this.mood === 'sleepy') return 'sleep';
+    if (this.pose === 'study' || this.pose === 'writing') return 'study';
+    if (this.mood === 'urging' || this.mood === 'angry') return 'urging';
+    if (this.pose === 'wink' || this.pose === 'teasing') return 'wink';
+    if (this.pose === 'waiting' || this.pose === 'sitting') return 'waiting';
+    return 'waiting';
   }
 
   draw(ctx, lookAtPoint) {
@@ -227,18 +263,20 @@ class BoyActor {
     // Body container with breath
     ctx.translate(0, breathY);
 
-    // Single-pose sprite rendering or High-detail 60FPS Canvas Animation
+    // High-Resolution Full-Body Character Rendering
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
     const key = this.getSpriteKey();
     const img = BOY_IMAGES[key];
-    // Only render image if it is an individual cropped boy sprite (not a multi-thumbnail collage sheet)
-    const isSingleSprite = img && img.complete && img.naturalWidth > 0 && !img.isCollage;
-    
-    if (isSingleSprite) {
-      const targetH = 150;
+
+    if (img && img.complete && img.naturalWidth > 0) {
+      // Full-body height: 165px, natural aspect ratio, grounded on shadow
+      const targetH = 165;
       const scale = targetH / img.naturalHeight;
       const drawW = img.naturalWidth * scale;
       const drawH = targetH;
-      ctx.drawImage(img, -drawW / 2, -drawH + 22, drawW, drawH);
+      ctx.drawImage(img, -drawW / 2, -drawH + 18, drawW, drawH);
     } else {
       // Fluid, animated 60FPS character with physics, blinking eyes, expressive mouth, and companion cat
       this.drawBody(ctx);

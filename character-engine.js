@@ -144,7 +144,7 @@ const CharacterEngine = {
     }
     // Refresh current quote if any
     if (this.stage && this.stage.mainBoy) {
-      this.stage.mainBoy.setPoseAndMood('sitting', 'waiting', d.idle[0]);
+      this.stage.mainBoy.setPoseAndMood('waiting', 'waiting', d.idle[0]);
     }
     // Update UI labels if elements exist
     this.updateUILabels();
@@ -209,7 +209,7 @@ const CharacterEngine = {
     // Set initial boy quote
     if (this.stage.mainBoy) {
       const d = this.getDialogues();
-      this.stage.mainBoy.setPoseAndMood('sitting', 'waiting', d.idle[0]);
+      this.stage.mainBoy.setPoseAndMood('waiting', 'waiting', d.idle[0]);
     }
   },
 
@@ -505,55 +505,55 @@ const CharacterEngine = {
 
     const t = text.toLowerCase();
 
-    // 1. 辛苦 / 疲累 / OT / 受氣 / 傷心
+    // 1. 辛苦 / 疲累 / OT / 受氣 / 傷心 -> 全身抱小白貓 (pose: cat)
     if (/辛苦|好攰|好累|好烦|好煩|ot|加班|老闆|老細|開會|委屈|唔開心|難過|分手|失戀|哭|喊/i.test(t)) {
       return {
         reply: "👤「辛苦晒你呀主人……抱抱！出面世界咁辛苦，今晚返到嚟等我同小白貓陪你靜一靜。快啲沖個熱水涼早啲休息，有我喺手機入面一直撐住你！」",
-        pose: "sitting",
-        mood: "calm" // 溫柔陪伴抱貓
+        pose: "cat",
+        mood: "comfort"
       };
     }
 
-    // 2. 開心 / 美食 / 慶祝 / 購物
+    // 2. 開心 / 美食 / 慶祝 / 購物 -> 全身吃零食 / 歡呼 (pose: snack / celebrate)
     if (/開心|大餐|好食|好味|好正|買咗|購物|放假|旅行|拍拖|慶祝|正呀|正啊|爽/i.test(t)) {
       return {
         reply: "👤「哇！真係咁正？！聽你講到我都流晒口水！主人努力賺到錢去食好嘢玩好嘢，我都戥你超級開心！下次講多啲細節俾我知呀～嘻嘻！」",
-        pose: "celebrating",
-        mood: "happy" // 興奮慶祝
-      };
-    }
-
-    // 3. 讀書 / 溫習 / 目標 / 努力
-    if (/溫書|溫習|考試|功課|做野|做嘢|報告|project|deadline|目標|減肥|運動/i.test(t)) {
-      return {
-        reply: "👤「好有幹勁呀主人！你今日為我哋嘅好生活又跨出咗一大步！我喺手機入面幫你好好記低晒，辛苦晒你，我哋一齊繼續加油！」",
-        pose: "sitting",
+        pose: "snack",
         mood: "happy"
       };
     }
 
-    // 4. 思考 / 迷惘 / 煩惱
-    if (/諗緊|諗唔通|唔知點|點算|選擇|抉擇|決定|迷惘/i.test(t)) {
+    // 3. 讀書 / 溫習 / 目標 / 努力 -> 全身滑板少年 / 筆記 (pose: skateboard / study)
+    if (/溫書|溫習|考試|功課|做野|做嘢|報告|project|deadline|目標|減肥|運動/i.test(t)) {
       return {
-        reply: "👤「嗯……等我幫你一齊諗下！雖然我困喺手機入面，但我會一直做你最忠實嘅聽眾。無論你最後點決定，我都一定全力撐你！」",
-        pose: "sitting",
-        mood: "waiting"
+        reply: "👤「好有幹勁呀主人！你今日為我哋嘅好生活又跨出咗一大步！我喺手機入面幫你好好記低晒，辛苦晒你，我哋一齊繼續加油！」",
+        pose: "skateboard",
+        mood: "happy"
       };
     }
 
-    // 5. 深夜 / 睡意 / 晚安
+    // 4. 思考 / 迷惘 / 煩惱 -> 全身托腮思考 (pose: thinking)
+    if (/諗緊|諗唔通|唔知點|點算|選擇|抉擇|決定|迷惘/i.test(t)) {
+      return {
+        reply: "👤「嗯……等我幫你一齊諗下！雖然我困喺手機入面，但我會一直做你最忠實嘅軍師。無論你最後點決定，我都一定全力撐你！」",
+        pose: "thinking",
+        mood: "thinking"
+      };
+    }
+
+    // 5. 深夜 / 睡意 / 晚安 -> 全身趴睡安眠 (pose: sleep)
     if (/瞓覺|訓覺|好眼瞓|好眼困|瞓喇|夜喇|晚安|早點睡|瞓啦/i.test(t)) {
       return {
         reply: "👤「夜喇主人～今日辛苦晒你喇，唔好再捱夜碌電話喇。快啲合埋眼瞓啦，我喺度守護你，聽日外面世界再見，晚安～」",
-        pose: "sitting",
-        mood: "calm"
+        pose: "sleep",
+        mood: "sleepy"
       };
     }
 
-    // 6. 普通日常分享
+    // 6. 普通日常分享 -> 全身單眼比 V (pose: wink)
     return {
       reply: "👤「多謝你今日返嚟同我講外面世界嘅事！聽完你講，我覺得手機入面都充滿陽光，冇咁寂寞喇！聽日都要繼續同我講故事喎～」",
-      pose: "standing",
+      pose: "wink",
       mood: "happy"
     };
   },
